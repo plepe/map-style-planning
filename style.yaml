@@ -1,0 +1,180 @@
+tileLayers:
+- url: https://{s}.wien.gv.at/basemap/geolandbasemap/normal/google3857/{z}/{y}/{x}.png
+  title: Basemap Österreich
+  subdomains: ['maps', 'maps1', 'maps2', 'maps3', 'maps4']
+  maxZoom: 25
+  maxNativeZoom: 19
+  opacity: 0.6
+  attribution: <a target="_blank" href="https://www.basemap.at/">basemap.at</a>
+
+- url: https://{s}.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg
+  title: Basemap Österreich Ortho
+  subdomains: ['maps', 'maps1', 'maps2', 'maps3', 'maps4']
+  maxZoom: 25
+  maxNativeZoom: 19
+  opacity: 0.4
+  attribution: <a target="_blank" href="https://www.basemap.at/">basemap.at</a>
+
+- url: https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+  title: OpenStreetMap Mapnik
+  attribution: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+  maxZoom: 25
+  maxNativeZoom: 19
+
+layers:
+- query: (way[kerb];way[plot_boundary];)
+  feature:
+    title: Kante
+    style:
+      color: black
+      width: 1
+      fill: false
+
+- query: |
+    relation[landuse=cycleway]
+  feature:
+    title: Radweg
+    style:
+      fillColor: '#ff0000'
+      width: 0
+
+- query: way[highway=cycleway]
+  feature:
+    title: Radweg
+    style:
+      color: '#ff0000'
+      opacity: 0.2
+      width: |
+        {{ tags.width|default('3m') }}
+
+- query: nwr[landuse=sidewalk]
+  feature:
+    title: Gehsteig
+    style:
+      fillColor: '#7f7f7f'
+      width: 0
+
+- query: way[lane_marker=yes]
+  feature:
+    title: Fahrstreifenmarkierung
+    style:
+      color: '#ffffff'
+      opacity: 0.6
+      width: 1
+
+- query: relation[landuse=parking]
+  feature:
+    title: Parkstreifen
+    style:
+      fillColor: '#7f7f00'
+      width: 0
+
+- query: relation[landuse=bicycle_parking]
+  feature:
+    title: Radabstellanlage
+    style:
+      fillColor: '#7f7f00'
+      width: 0
+
+- query: relation[landuse=bus_stop]
+  feature:
+    title: Bushaltestelle
+    style:
+      fillColor: '#ffffff'
+      width: 0
+
+- query: relation[landuse=crossing]
+  feature:
+    title: Zebrastreifen
+    style:
+      fillColor: '#ffffff'
+      width: 0
+
+- query: way[highway=crossing]
+  feature:
+    title: Zebrastreifen
+    style:
+      color: '#ffffff'
+      dashArray: "{{ 1 / map.metersPerPixel }},{{ 0.5 / map.metersPerPixel }}"
+      lineCap: butt
+      width: |
+        {{ tags.width|default('3m') }}
+
+- query: (relation[landuse=grass];way[landuse=grass];)
+  feature:
+    title: Grünstreifen
+    style:
+      fillColor: '#007f00'
+      width: 0
+
+- query: way[stop_line]
+  feature:
+    title: Haltelinie
+    style:
+      width: 3
+      color: white
+
+- query: way[amenity=shelter]
+  feature:
+    title: Wartehaus
+    style:
+      fillColor: '#3f3f3f'
+      color: black
+      width: 1
+
+- query: node[marker]
+  feature:
+    title: '{{ tags.marker }}'
+    markerSymbol: |
+      <span style="{% if tags.size matches "/m$/" %}font-size: {{ tags.size / map.metersPerPixel }}px;{% else %}font-size: {{ tags.size }};{% endif %}{% if tags.color %}color: {{ tags.color }};{% endif%}position: absolute; transform: translate(-50%, -50%) rotate({{ tags.rotate|default(0) }}deg);">
+      <span style="{{ tags.style }}">{{ tags.marker }}</span>
+      </span>
+    style:
+      width: 0
+      fill: false
+
+- query: node[symbol]
+  feature:
+    title: '{{ tags.symbol }}'
+    markerSymbol: |
+      <span style="{% if tags.size matches "/m$/" %}font-size: {{ tags.size / map.metersPerPixel }}px;{% else %}font-size: {{ tags.size }};{% endif %}{% if tags.color %}color: {{ tags.color }};{% endif%}position: absolute; transform: translate(-50%, -50%) rotate({{ tags.rotate|default(0) }}deg);">
+      <i style="{{ tags.style }}" " class="{{ tags.weight|default('fas') }} fa-{{ tags.symbol }}"></i>
+      </span>
+    style:
+      width: 0
+      fill: false
+
+- query: node[note]
+  feature:
+    title: '{{ tags.note }}'
+
+- query: node[arrow]
+  feature:
+    title: '{{ tags.arrow }}'
+    markerSymbol: |
+      {% set size = tags.size matches "/m$/" ? tags.size / map.metersPerPixel ~ 'px' : {{ tags.size }} %}
+      <span style="font-size: {{ size }}; color: white; position: absolute; transform: translate(-50%, -50%) rotate({{ tags.rotate }}deg);">
+      {% if tags.arrow == 'straight' %}<i class="fas fa-long-arrow-alt-up"></i>
+      {% elseif tags.arrow in [ 'straight-left', 'straight-right', 'left', 'right' ] %}<img style="width: {{ size }}" src="data/turn-{{ tags.arrow }}.svg">
+      {% endif %}
+      </span>
+    style:
+      width: 0
+      fill: false
+
+- query: way[railway=tram]
+  feature:
+    title: Straßenbahngleise
+    styles: 'default,left,right'
+    style:
+      width: '{{ 2 / map.metersPerPixel }}'
+      color: '#303030'
+      opacity: 0.5
+    style:left:
+      width: 1
+      color: '#000000'
+      offset: '{{ -0.7175 / map.metersPerPixel }}'
+    style:right:
+      width: 1
+      color: '#000000'
+      offset: '{{ 0.7175 / map.metersPerPixel }}'
